@@ -1,0 +1,14 @@
+{
+  "name": "chalmers-ldap-gamma-sync",
+  "version": "1.0.0",
+  "description": "Sync users from chalmers ldap to gamma whitelist",
+  "main": "index.js",
+  "repository": "https://github.com/cthit/chalmers-ldap-gamma-sync",
+  "author": "Rasmus Rosengren <rasmus.rosengren@protonmail.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.21.1",
+    "ldap": "^0.7.1"
+  }
+}
