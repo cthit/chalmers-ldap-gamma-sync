@@ -5,18 +5,12 @@ const client = ldap.createClient({
 	url: "ldap://ldap.chalmers.se",
 });
 
-// Den vanliga gruppen
-let group = "s_passer_prog_tkite";
-
-// Gruppen för folk som inte börjat, lär behöva ändra h21 till aktuellt år, dvs h22 etc.
-// let group = "s_studier_forvantade_programdeltagare_chalmers_tkite_h21";
-
 (async function () {
 	let cids = await new Promise((resolve, reject) => {
 		client.search(
 			"ou=groups,dc=chalmers,dc=se",
 			{
-				filter: "cn=" + group,
+				filter: "cn=" + process.env.CHALMERS_GROUP,
 				scope: "sub",
 			},
 			(err, res) => {
