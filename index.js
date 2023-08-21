@@ -24,24 +24,30 @@ const client = ldap.createClient({
 			}
 		);
 	});
-	console.log(cids);
+	console.log("Found", cids.length, "CIDs");
+	console.debug(dir(cids, {depth: null, colors: true, maxArrayLength: null}));
 
 	// Lägg till dem en och en eftersom att det krashar annars
-	cids.forEach((cid) => {
-		axios({
-			method: "POST",
-			url: "https://gamma.chalmers.it/api/admin/users/whitelist",
-			data: {
-				cids: [cid],
-			},
-			headers: {
-				Authorization: "pre-shared " + process.env.GAMMA_API_KEY,
-				"Content-Type": "application/json",
-			},
+	await Promise.all(
+		cids.map(async (cid) => {
+			try {
+				await axios({
+					method: "POST",
+					url: "https://gamma.chalmers.it/api/admin/users/whitelist",
+					data: {
+						cids: [cid],
+					},
+					headers: {
+						Authorization: "pre-shared " + process.env.GAMMA_API_KEY,
+						"Content-Type": "application/json",
+					},
+				});
+				console.log("Added:", cid);
+			} catch (e) {
+				console.error("Could not add", cid + ":", e.message);
+			}
 		})
-			.then(() => console.log("Added: ", cid))
-			.catch(() => console.log("Could not add: ", cid));
-	});
+	);
 
 	process.exit(0);
 })();
