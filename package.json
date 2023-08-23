@@ -9,6 +9,6 @@
   "private": true,
   "dependencies": {
     "axios": "^0.21.1",
-    "ldap": "^0.7.1"
+    "ldapjs": "^0.7.1"
   }
 }
