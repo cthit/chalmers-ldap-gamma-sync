@@ -65,7 +65,7 @@ const client = ldap.createClient({
 	console.log(cids.length - failed.length, "added,", failed.length, "failed out of", cids.length, "total");
 
 	if (failed.length > 0) {
-		console.warn("\n" + BG_RED +"The following CIDs failed to add:" + COLOR_RESET);
+		console.warn("\n" + BG_RED + "The following CIDs failed to add:" + COLOR_RESET);
 		failed.forEach((f) => console.warn(f));
 	}
 
