@@ -1,21 +1,23 @@
 const axios = require("axios");
-const ldap = require("ldap");
+const ldap = require("ldapjs");
 
 const client = ldap.createClient({
 	url: "ldap://ldap.chalmers.se",
 });
 
 (async function () {
-	let cids = await new Promise((resolve, reject) => {
+	console.log("Syncing...");
+	let cids = await new Promise((resolve, _) => {
 		client.search(
 			"ou=groups,dc=chalmers,dc=se",
 			{
 				filter: "cn=" + process.env.CHALMERS_GROUP,
-				scope: "sub",
+				scope: "sub"
 			},
 			(err, res) => {
 				if (err) {
-					reject(err);
+					console.error("LDAP connection failed:", err.message);
+					process.exit(1);
 				}
 
 				res.on("searchEntry", (entry) => {
@@ -24,8 +26,14 @@ const client = ldap.createClient({
 			}
 		);
 	});
+
+	if (!cids) {
+		console.error("No CIDs found");
+		process.exit(0);
+	}
+
 	console.log("Found", cids.length, "CIDs");
-	console.debug(dir(cids, {depth: null, colors: true, maxArrayLength: null}));
+	console.dir(cids, {depth: null, colors: true, maxArrayLength: null});
 
 	// Lägg till dem en och en eftersom att det krashar annars
 	await Promise.all(
