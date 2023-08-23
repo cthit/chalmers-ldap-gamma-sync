@@ -33,7 +33,7 @@ const client = ldap.createClient({
 	});
 
 	if (!cids) {
-		console.error("No CIDs found");
+		console.error(BG_RED + "No CIDs found" + COLOR_RESET);
 		process.exit(0);
 	}
 
