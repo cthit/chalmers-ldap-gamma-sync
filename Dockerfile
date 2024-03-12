@@ -1,25 +1,33 @@
-FROM node:fermium-alpine AS build
+FROM rust:1.76-alpine AS build
 LABEL maintainer="digIT <digit@chalmers.it>"
 
-COPY ["index.js", "package.json", "yarn.lock", "/app/"]
+# Install build dependencies
+RUN apk add --no-cache build-base musl-dev openssl-dev openssl
+ENV OPENSSL_DIR=/usr
 
-# Set up dependencies
 WORKDIR /app
-RUN yarn
 
-# Build binary
-RUN npm install -g pkg@5.8.1 pkg-fetch@3.5.2
-RUN pkg index.js -o /app/chalmers-ldap-gamma-sync
+# Copy over the Cargo.toml files to the shell project
+COPY Cargo.toml Cargo.lock ./
+
+# Build and cache the dependencies
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+RUN cargo fetch
+RUN cargo build --release
+RUN rm src/main.rs
+
+# Copy the actual code files and build the application
+COPY src ./src/
+# Update the file date
+RUN touch src/main.rs
+RUN cargo build --release
 
 ##########################
 #    PRODUCTION STAGE    #
 ##########################
-FROM alpine
-
-# Copy binary
-COPY --from=build /app/chalmers-ldap-gamma-sync /app/chalmers-ldap-gamma-sync
-
-RUN echo "0 0 * * * /app/chalmers-ldap-gamma-sync" > /etc/crontabs/root
+FROM scratch
 
 WORKDIR /app
-ENTRYPOINT ["crond", "-f", "-l", "2"]
+COPY --from=build /app/target/release/chalmers-ldap-gamma-sync chalmers-ldap-gamma-sync
+
+ENTRYPOINT ["/app/chalmers-ldap-gamma-sync"]

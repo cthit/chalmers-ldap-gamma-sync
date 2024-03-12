@@ -1,0 +1,10 @@
+version: "3.7"
+
+services:
+  chalmers-ldap-gamma-sync:
+    image: ghcr.io/cthit/ldap-gamma-sync
+    restart: unless-stopped
+    environment:
+      GAMMA_API_KEY_ID: key_id
+      GAMMA_API_KEY_SECRET: secret
+      LDAP_COMMON_NAME: s_passer_prog_tkite
