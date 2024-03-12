@@ -1,14 +1,34 @@
+use clokwerk::{Job, Scheduler, TimeUnits};
 use ldap3::{LdapConn, Scope, SearchEntry};
 use std::{env, error::Error};
 use ureq::serde_json::json;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
     let key_id = env::var("GAMMA_API_KEY_ID").expect("GAMMA_API_KEY_ID");
     let key_secret = env::var("GAMMA_API_KEY_SECRET").expect("GAMMA_API_KEY_SECRET");
     let ldap_cn = env::var("LDAP_COMMON_NAME").expect("LDAP_COMMON_NAME");
+    let api_key = format!("pre-shared {}:{}", key_id, key_secret);
 
-    let api_key = &format!("pre-shared {}:{}", key_id, key_secret);
+    try_sync(&api_key, &ldap_cn);
 
+    let mut scheduler = Scheduler::new();
+    scheduler.every(1.day()).at("12:00 am").run(move || {
+        try_sync(&api_key, &ldap_cn);
+    });
+
+    loop {
+        scheduler.run_pending();
+        std::thread::sleep(std::time::Duration::from_secs(60));
+    }
+}
+
+fn try_sync(api_key: &String, ldap_cn: &String) {
+    sync(api_key, ldap_cn).unwrap_or_else(|e| {
+        println!("Sync failed: {}", e);
+    });
+}
+
+fn sync(api_key: &String, ldap_cn: &String) -> Result<(), Box<dyn Error>> {
     println!("Sync started - connecting to LDAP...");
     let mut ldap = LdapConn::new("ldap://ldap.chalmers.se")?;
     let (rs, _res) = ldap
@@ -55,7 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let failed_count = cids_count - failed_cids.len();
     println!("\nAdded {} out of {} CIDs", failed_count, cids_count);
-    if failed_cids.len() > 0 {
+    if !failed_cids.is_empty() {
         println!("The following CIDs failed to add:\n{:?}", failed_cids);
     }
 
