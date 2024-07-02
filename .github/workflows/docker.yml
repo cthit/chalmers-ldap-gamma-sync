@@ -1,9 +1,14 @@
-on: [push, pull_request]
-
 name: "Continuous Integration"
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 jobs:
   docker:
+    name: Docker
     runs-on: ubuntu-latest
 
     permissions:

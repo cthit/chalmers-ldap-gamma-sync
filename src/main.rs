@@ -22,13 +22,13 @@ fn main() {
     }
 }
 
-fn try_sync(api_key: &String, ldap_cn: &String) {
+fn try_sync(api_key: &str, ldap_cn: &str) {
     sync(api_key, ldap_cn).unwrap_or_else(|e| {
         println!("Sync failed: {}", e);
     });
 }
 
-fn sync(api_key: &String, ldap_cn: &String) -> Result<(), Box<dyn Error>> {
+fn sync(api_key: &str, ldap_cn: &str) -> Result<(), Box<dyn Error>> {
     println!("Sync started - connecting to LDAP...");
     let mut ldap = LdapConn::new("ldap://ldap.chalmers.se")?;
     let (rs, _res) = ldap
